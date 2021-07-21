@@ -1,8 +1,10 @@
 import Brick
 import Brick.Widgets.Border.Style
 import Brick.Widgets.Border
-import System.Environment (getArgs)
 import qualified Graphics.Vty as V
+
+import System.Environment (getArgs)
+import System.Directory (doesFileExist)
 
 type Name = ()
 data Interaction = Interaction
@@ -51,6 +53,11 @@ drawUI (UniEditor content) = return $
   borderWithLabel (str "UniEditor") $
     strWrap (content ++ "|") <=> fill ' '
 
-initialState = UniEditor <$> (filename >>= readFile)
+initialState fn = do
+  fexists <- doesFileExist fn
+  if fexists then
+    UniEditor <$> readFile fn
+  else
+    return $ UniEditor ""
 
-main = initialState >>= defaultMain app
+main = filename >>= initialState >>= defaultMain app
