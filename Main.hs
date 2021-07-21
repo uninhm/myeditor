@@ -8,7 +8,7 @@ import System.Directory (doesFileExist)
 
 type Name = ()
 data Interaction = Interaction
-newtype UniEditor = UniEditor String
+newtype UniEditor = UniEditor [String]
 
 app :: App UniEditor Interaction Name
 app = App { appDraw = drawUI
@@ -30,34 +30,36 @@ handleEvent s _ = continue s
 filename = head <$> getArgs
 
 saveToFile (UniEditor content) = do
-  filename >>= flip writeFile content
+  filename >>= flip writeFile (unlines content)
   return $ UniEditor content
 
 addstring :: String -> UniEditor -> UniEditor
-addstring s (UniEditor content) = UniEditor (content ++ s)
+addstring s (UniEditor content) = UniEditor $ init content ++ [last content ++ s]
 
 addchar :: Char -> UniEditor -> UniEditor
-addchar c (UniEditor content) = UniEditor (content ++ [c])
+addchar c (UniEditor content) = UniEditor $ init content ++ [last content ++ [c]]
 
 lastN n s = drop (length s - n) s
 
 removeLastChar :: UniEditor -> UniEditor
-removeLastChar (UniEditor content) | lastN 4 content == "    " =
-  UniEditor $ iterate init content !! 4
-removeLastChar (UniEditor "") = UniEditor ""
-removeLastChar (UniEditor content) = UniEditor (init content)
+removeLastChar (UniEditor content) | lastN 4 (last content) == "    " =
+  UniEditor $ init content ++ [iterate init (last content) !! 4]
+removeLastChar (UniEditor [""]) = UniEditor [""]
+removeLastChar (UniEditor content)
+  | null $ last content = UniEditor $ init content
+  | otherwise = UniEditor $ init content ++ [init $ last content]
 
 drawUI :: UniEditor -> [Widget Name]
 drawUI (UniEditor content) = return $
   withBorderStyle unicode $
   borderWithLabel (str "UniEditor") $
-    strWrap (content ++ "|") <=> fill ' '
+    strWrap (unlines $ init content ++ [last content ++ "|"]) <=> fill ' '
 
 initialState fn = do
   fexists <- doesFileExist fn
   if fexists then
-    UniEditor <$> readFile fn
+    UniEditor . lines <$> readFile fn
   else
-    return $ UniEditor ""
+    return $ UniEditor [""]
 
 main = filename >>= initialState >>= defaultMain app
