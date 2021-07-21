@@ -1,8 +1,8 @@
 # MyEditor
 
 Usage:  
-`myeditor file`
+`myeditor <filename>`
 
-Keybindings:
-Esc: Exit
+Keybindings:  
+Esc: Exit  
 Ctrl + S: Save
