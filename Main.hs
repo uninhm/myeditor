@@ -1,8 +1,6 @@
 import Brick
 import Brick.Widgets.Border.Style
 import Brick.Widgets.Border
-import Brick.Widgets.Center
-import Brick.Widgets.Edit
 import System.Environment (getArgs)
 import qualified Graphics.Vty as V
 
