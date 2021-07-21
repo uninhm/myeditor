@@ -37,7 +37,7 @@ addstring :: String -> UniEditor -> UniEditor
 addstring s (UniEditor content) = UniEditor $ init content ++ [last content ++ s]
 
 addchar :: Char -> UniEditor -> UniEditor
-addchar c (UniEditor content) = UniEditor $ init content ++ [last content ++ [c]]
+addchar c = addstring [c]
 
 lastN n s = drop (length s - n) s
 
@@ -50,10 +50,11 @@ removeLastChar (UniEditor content)
   | otherwise = UniEditor $ init content ++ [init $ last content]
 
 drawUI :: UniEditor -> [Widget Name]
-drawUI (UniEditor content) = return $
+drawUI s = return $
   withBorderStyle unicode $
   borderWithLabel (str "UniEditor") $
-    strWrap (unlines $ init content ++ [last content ++ "|"]) <=> fill ' '
+    strWrap (unlines contentWithCursor) <=> fill ' '
+      where (UniEditor contentWithCursor) = addchar '|' s
 
 initialState fn = do
   fexists <- doesFileExist fn
